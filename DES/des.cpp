@@ -36,9 +36,7 @@ vector<int> initial_permutation(vector<int> temp) {
 	{
 		x[i] = temp[ip[i]];
 	}
-
 	return x;
-
 }
 
 vector<int> inverse_initial_permutation(vector<int> temp) {
@@ -58,9 +56,27 @@ vector<int> inverse_initial_permutation(vector<int> temp) {
 	{
 		x[i] = temp[ip_1[i]];
 	}
-
 	return x;
+}
 
+vector<int> expansion_permutation(vector<int> temp) {
+	vector<int> ep = {31,  0,  1,  2,  3,  4,
+						 3,  4,  5,  6,  7,  8,
+						 7,  8,  9, 10, 11, 12,
+						11, 12, 13, 14, 15, 16,
+						15, 16, 17, 18, 19, 20,
+						19,	20, 21, 22, 23, 24,
+						23, 24,	25, 26, 27, 28, 
+						27, 28, 29, 30, 31,  0};
+
+	vector<int> x (48);
+
+	int size = ep.size();
+	for (int i = 0; i < size; ++i)
+	{
+		x[i] = temp[ep[i]];
+	}
+	return x;
 }
 
 int main() {
@@ -76,6 +92,25 @@ int main() {
 		temp = char_to_bin(plaintext.substr(i,8));
 
 		bits.push_back(temp);
+	}
+
+	size = bits.size();
+
+	for (int i = 0; i < size; ++i)
+	{
+		bits[i] = initial_permutation(bits[i]);
+
+		vector<int> left(32), right(32);
+
+		int size2 = size/2;
+
+		for(int j = 0; j < size2; j++) {
+			left[j] = bits[i][j];
+			right[j] = bits[i][size2+j-1];
+		}
+		right = expansion_permutation(right);
+
+		cout << right.size();
 	}
 
 	// for (size_t i = 0; i < bits.size(); ++i)
