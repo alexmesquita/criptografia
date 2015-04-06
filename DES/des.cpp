@@ -32,8 +32,7 @@ vector<int> initial_permutation(vector<int> temp) {
 	vector<int> x (64);
 
 	int size = ip.size();
-	for (int i = 0; i < size; ++i)
-	{
+	for (int i = 0; i < size; ++i) {
 		x[i] = temp[ip[i]];
 	}
 	return x;
@@ -52,8 +51,7 @@ vector<int> inverse_initial_permutation(vector<int> temp) {
 	vector<int> x (64);
 
 	int size = ip_1.size();
-	for (int i = 0; i < size; ++i)
-	{
+	for (int i = 0; i < size; ++i) {
 		x[i] = temp[ip_1[i]];
 	}
 	return x;
@@ -72,8 +70,22 @@ vector<int> expansion_permutation(vector<int> temp) {
 	vector<int> x (48);
 
 	int size = ep.size();
-	for (int i = 0; i < size; ++i)
-	{
+	for (int i = 0; i < size; ++i) {
+		x[i] = temp[ep[i]];
+	}
+	return x;
+}
+
+vector<int> permutation(vector<int> temp) {
+	vector<int> ep = {	15,  6, 19, 20, 28, 11, 27, 16,
+						 0, 14, 22, 25,  4, 17, 30,  9,
+						 1,  7, 23, 13, 31, 26,  2,  8,
+						18, 12, 29,  5, 21, 10,  3, 24};
+
+	vector<int> x (32);
+
+	int size = ep.size();
+	for (int i = 0; i < size; ++i) {
 		x[i] = temp[ep[i]];
 	}
 	return x;
@@ -96,8 +108,7 @@ int main() {
 
 	size = bits.size();
 
-	for (int i = 0; i < size; ++i)
-	{
+	for (int i = 0; i < size; ++i) {
 		bits[i] = initial_permutation(bits[i]);
 
 		vector<int> left(32), right(32);
@@ -108,8 +119,15 @@ int main() {
 			left[j] = bits[i][j];
 			right[j] = bits[i][size2+j-1];
 		}
+
 		right = expansion_permutation(right);
 
+		// TODO key
+
+		// TODO S-BOXES
+
+		right = permutation(right);
+		
 		cout << right.size();
 	}
 
