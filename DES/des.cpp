@@ -137,14 +137,14 @@ vector<int> s_boxes(vector<int> temp) {
 
 	for (int i = 0; i < 8; ++i)	{
 		string linha_string = "00";
-		linha_string[0] = temp[i*6];
-		linha_string[1] = temp[i*6+5];
+		linha_string[0] = temp[i*6]+'0';
+		linha_string[1] = temp[i*6+5]+'0';
 
 		string coluna_string = "0000";
-		coluna_string[0] = temp[i*8+1];
-		coluna_string[1] = temp[i*8+2];
-		coluna_string[2] = temp[i*8+3];
-		coluna_string[3] = temp[i*8+4];
+		coluna_string[0] = temp[i*6+1]+'0';
+		coluna_string[1] = temp[i*6+2]+'0';
+		coluna_string[2] = temp[i*6+3]+'0';
+		coluna_string[3] = temp[i*6+4]+'0';
 
 		long linha = strtol(linha_string.c_str(), NULL, 2);
 		long coluna = strtol(coluna_string.c_str(), NULL, 2);
@@ -161,9 +161,7 @@ vector<int> s_boxes(vector<int> temp) {
 	return x;
 }
 
-int main() {
-	string plaintext = "abcdefgh";
-
+vector<vector<int>> convert_plaintext(string plaintext) {
 	int size = plaintext.size();
 
 	while(size%8) {
@@ -179,41 +177,176 @@ int main() {
 		bits.push_back(temp);
 	}
 
-	size = bits.size();
+	return bits;
+}
+
+vector<int> convert_key(string key) {
+	int size = key.size();
+
+	while(size%8) {
+		key += " ";
+		size++;
+	}
+
+	vector<int> bits_key(64);
+	for (int i = 0; i < size; i+=8)	{
+		int count = 7;
+		while(key[i]) {
+			bits_key[i+count] = key[i]&1;
+			key[i] >>= 1;
+			count--;
+		}
+	}
+
+	return bits_key;
+}
+
+vector<int> left_shift(vector<int> temp, int round) {
+	vector<int> number_of_rotations = {1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1};
+
+	for (int i = 0; i < number_of_rotations[round%16]; ++i)
+	{
+		int first = temp[0];
+		for(int j = 0; j < 27; j++) {
+			temp[j] = temp[j+1];
+		}
+		temp[27] = first;
+	}
+	return temp;
+}
+
+vector<int> permutation_choice1_c(vector<int> bits_key) {
+
+	vector<int> pc1c = {56, 48, 40, 32, 24, 16,  8,
+						 0, 57, 49, 41, 33, 25, 17,
+						 9,  1, 58, 50, 42, 34, 26,
+						18, 10,  2, 59, 51, 43, 35};
+
+	vector<int> c1(28);
+
+	for(int i = 0; i < 28; i++) {
+		c1[i] = bits_key[pc1c[i]];
+	}
+
+	return c1;
+}
+
+vector<int> permutation_choice1_d(vector<int> bits_key) {
+	vector<int> pc1d = {62, 54, 46, 38, 30, 22, 14,
+						 6, 61, 53, 45, 37, 29, 21, 
+						13,  5, 60, 52, 44, 36, 28,
+						20, 12,  4, 27, 19, 11,  3};
+
+	vector<int> d1(28);
+
+	for(int i = 0; i < 28; i++) {
+		d1[i] = bits_key[pc1d[i]];
+	}
+
+	return d1;
+}
+
+vector<int> permutation_choice2(vector<int> ci, vector<int> di) {
+	vector<int> pdc2 = {13, 16, 10, 23,  0,  4,  2, 27,
+						14,  5, 20,  9, 22, 18, 11,  3, 
+						25,  7, 15,  6, 26, 19, 12,  1, 
+						40, 51, 30, 36, 46, 54, 29, 39, 
+						50, 44, 32, 47, 43, 48, 38, 55, 
+						33, 52, 45, 41, 49, 35, 28, 31};
+
+	vector<int> key_choice2 (48);
+	for (int i = 0; i < 48; ++i)
+	{
+		if(pdc2[i] < 28) {
+			key_choice2[i] = ci[pdc2[i]];
+		}
+		else {
+			key_choice2[i] = di[pdc2[i] - 28];
+		}
+	}
+
+	return key_choice2;
+}
+
+vector<int> xor_operation(vector<int> temp1, vector<int> temp2) {
+	int size = temp1.size();
+
+	for (int i = 0; i < size; ++i)
+	{
+		temp1[i] = temp1[i] ^ temp2[i];
+	}
+
+	return temp1;
+}
+
+string chipher(string plaintext, string key) {
+
+	vector<vector<int>> bits = convert_plaintext(plaintext);
+	vector<int> bits_key = convert_key(key);
+	string chipher_bits;
+
+	int size = bits.size();
 
 	for (int i = 0; i < size; ++i) {
 		bits[i] = initial_permutation(bits[i]);
 
-		vector<int> left(32), right(32);
+		vector<int> left(32), right(32), temp_right(32);
 
 		int size2 = size/2;
 
 		for(int j = 0; j < size2; j++) {
 			left[j] = bits[i][j];
 			right[j] = bits[i][size2+j-1];
+			temp_right[j] = bits[i][size2+j-1];
 		}
 
 		right = expansion_permutation(right);
 
-		// TODO key
+		vector<int> ci(28), di(28);
+
+		ci = permutation_choice1_c(bits_key);
+		di = permutation_choice1_d(bits_key);
+
+		vector<int> aux1 = left_shift(ci, i);
+		vector<int> aux2 = left_shift(di, i);
+
+		vector<int> key_choice2 = permutation_choice2(aux1, aux2);
+
+		right = xor_operation(right, key_choice2);
 
 		right = s_boxes(right);
-
-		right = permutation(right);
 		
-		cout << right.size();
+		right = permutation(right);
+
+		right = xor_operation(right, left);
+
+		for (int j = 0; j < 32; ++j)
+		{
+			chipher_bits += (temp_right[j] + '0');
+		}
+
+		for (int j = 0; j < 32; ++j)
+		{
+			chipher_bits += (right[j] + '0');
+		}
 	}
 
-	// for (size_t i = 0; i < bits.size(); ++i)
-	// {
-	// 	for (size_t j = 0; j < bits[i].size(); ++j)
-	// 	{
-	// 		if(j%8 == 0) {
-	// 			cout << endl;
-	// 		}
-	// 		cout << bits[i][j];
-	// 	}
-	// 	cout << "--------" << endl;
-	// }
+	string chipher_text = "";
+
+	size = chipher_bits.size();
+	for (int i = 0; i < size; i+=8)
+	{
+		string temp = chipher_bits.substr(i, 8);
+		chipher_text += (char)strtol(temp.c_str(), NULL, 2);
+	}
+	return chipher_text;
+}
+
+int main() {
+	string plaintext = "02468aceeca86420", key = "0f1571c947d9e859";
+
+	cout << chipher(plaintext, key) << endl;
+
 	return 0;
+
 }
