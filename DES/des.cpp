@@ -1,35 +1,57 @@
 #include <iostream>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
-vector<int> char_to_bin(string str) {
-	vector<int> temp (64,0);
+vector<int> hex_to_bin(string str) {
+	vector<int> result;
 
 	int size = str.size();
+	string temp = "";
 
 	for (int i = 0; i < size; ++i)	{
-		int count = 7;
-		while(str[i]) {
-			temp[i*8+count] = str[i]&1;
-			str[i] >>= 1;
-			count--;
+		switch (str[i])
+		{
+			case '0': temp.append ("0000"); break;
+			case '1': temp.append ("0001"); break;
+			case '2': temp.append ("0010"); break;
+			case '3': temp.append ("0011"); break;
+			case '4': temp.append ("0100"); break;
+			case '5': temp.append ("0101"); break;
+			case '6': temp.append ("0110"); break;
+			case '7': temp.append ("0111"); break;
+			case '8': temp.append ("1000"); break;
+			case '9': temp.append ("1001"); break;
+			case 'a': temp.append ("1010"); break;
+			case 'b': temp.append ("1011"); break;
+			case 'c': temp.append ("1100"); break;
+			case 'd': temp.append ("1101"); break;
+			case 'e': temp.append ("1110"); break;
+			case 'f': temp.append ("1111"); break;
 		}
 	}
-	return temp;
+
+	size = temp.size();
+
+	for (int i = 0; i < size; ++i)
+	{
+		result.push_back(temp[i]-'0');
+	}
+	return result;
 }
 
 vector<int> initial_permutation(vector<int> temp) {
-	vector<int> ip = {	57, 49, 41, 33, 25, 17, 9, 1,
+	vector<int> ip = {	57, 49, 41, 33, 25, 17,  9, 1,
 						59, 51, 43, 35, 27, 19, 11, 3,
 						61, 53, 45, 37, 29, 21, 13, 5,
 						63, 55, 47, 39, 31, 23, 15, 7,
-						56, 48, 40, 32, 24, 16, 8, 0,
+						56, 48, 40, 32, 24, 16,  8, 0,
 						58,	50, 42, 34, 26, 18, 10, 2,
 						60, 52, 44, 36, 28, 20, 12, 4,
 						62, 54, 46, 38, 30, 22, 14, 6};
 
-	vector<int> x (64);
+	vector<int> x(64);
 
 	int size = ip.size();
 	for (int i = 0; i < size; ++i) {
@@ -161,18 +183,13 @@ vector<int> s_boxes(vector<int> temp) {
 	return x;
 }
 
-vector<vector<int>> convert_plaintext(string plaintext) {
+vector<vector<int>> convert_text(string plaintext) {
 	int size = plaintext.size();
-
-	while(size%8) {
-		plaintext += " ";
-		size++;
-	}
 
 	vector<int> temp(64);
 	vector<vector<int>> bits;
-	for (int i = 0; i < size; i+=8)	{
-		temp = char_to_bin(plaintext.substr(i,8));
+	for (int i = 0; i < size; i+=16)	{
+		temp = hex_to_bin(plaintext.substr(i,16));
 
 		bits.push_back(temp);
 	}
@@ -181,22 +198,9 @@ vector<vector<int>> convert_plaintext(string plaintext) {
 }
 
 vector<int> convert_key(string key) {
-	int size = key.size();
-
-	while(size%8) {
-		key += " ";
-		size++;
-	}
-
 	vector<int> bits_key(64);
-	for (int i = 0; i < size; i+=8)	{
-		int count = 7;
-		while(key[i]) {
-			bits_key[i+count] = key[i]&1;
-			key[i] >>= 1;
-			count--;
-		}
-	}
+	
+	bits_key = hex_to_bin(key);
 
 	return bits_key;
 }
@@ -215,35 +219,50 @@ vector<int> left_shift(vector<int> temp, int round) {
 	return temp;
 }
 
-vector<int> permutation_choice1_c(vector<int> bits_key) {
+vector<int> right_shift(vector<int> temp, int round) {
+	vector<int> number_of_rotations = {0,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1};
+
+	for (int i = 0; i < number_of_rotations[round%16]; ++i)
+	{
+		int last = temp[27];
+		for(int j = 27; j > 0; j--) {
+			temp[j] = temp[j-1];
+		}
+		temp[0] = last;
+	}
+	return temp;
+}
+
+vector<int> decipher_initial_shift(vector<int> temp) {
+	for (int i = 0; i < 28; ++i)
+	{
+		int last = temp[27];
+		for(int j = 27; j > 0; j--) {
+			temp[j] = temp[j-1];
+		}
+		temp[0] = last;
+	}
+	return temp;
+}
+
+vector<int> permutation_choice1(vector<int> bits_key) {
 
 	vector<int> pc1c = {56, 48, 40, 32, 24, 16,  8,
 						 0, 57, 49, 41, 33, 25, 17,
 						 9,  1, 58, 50, 42, 34, 26,
-						18, 10,  2, 59, 51, 43, 35};
-
-	vector<int> c1(28);
-
-	for(int i = 0; i < 28; i++) {
-		c1[i] = bits_key[pc1c[i]];
-	}
-
-	return c1;
-}
-
-vector<int> permutation_choice1_d(vector<int> bits_key) {
-	vector<int> pc1d = {62, 54, 46, 38, 30, 22, 14,
+						18, 10,  2, 59, 51, 43, 35,
+						62, 54, 46, 38, 30, 22, 14,
 						 6, 61, 53, 45, 37, 29, 21, 
 						13,  5, 60, 52, 44, 36, 28,
 						20, 12,  4, 27, 19, 11,  3};
 
-	vector<int> d1(28);
+	vector<int> result(56);
 
-	for(int i = 0; i < 28; i++) {
-		d1[i] = bits_key[pc1d[i]];
+	for(int i = 0; i < 56; i++) {
+		result[i] = bits_key[pc1c[i]];
 	}
 
-	return d1;
+	return result;
 }
 
 vector<int> permutation_choice2(vector<int> ci, vector<int> di) {
@@ -281,72 +300,173 @@ vector<int> xor_operation(vector<int> temp1, vector<int> temp2) {
 
 string chipher(string plaintext, string key) {
 
-	vector<vector<int>> bits = convert_plaintext(plaintext);
+	vector<vector<int>> bits = convert_text(plaintext);
+
 	vector<int> bits_key = convert_key(key);
+
 	string chipher_bits;
 
 	int size = bits.size();
 
+	bits_key = permutation_choice1(bits_key);
+
+	vector<int> ci(28), di(28);
+
+	for(int j = 0; j < 28; j++) {
+		ci[j] = bits_key[j];
+		di[j] = bits_key[j+28];
+	}
+
 	for (int i = 0; i < size; ++i) {
-		bits[i] = initial_permutation(bits[i]);
-
+		bits[i] = initial_permutation(bits[i]);		
 		vector<int> left(32), right(32), temp_right(32);
-
-		int size2 = size/2;
+		int size2 = left.size();
 
 		for(int j = 0; j < size2; j++) {
 			left[j] = bits[i][j];
-			right[j] = bits[i][size2+j-1];
-			temp_right[j] = bits[i][size2+j-1];
+			right[j] = bits[i][size2+j];
+			temp_right[j] = bits[i][size2+j];
 		}
 
-		right = expansion_permutation(right);
+		for(int k = 0; k < 16; k++) {
+			right = expansion_permutation(right);
 
-		vector<int> ci(28), di(28);
+			ci = left_shift(ci, k);
+			di = left_shift(di, k);
 
-		ci = permutation_choice1_c(bits_key);
-		di = permutation_choice1_d(bits_key);
+			vector<int> key_choice2 = permutation_choice2(ci, di);
 
-		vector<int> aux1 = left_shift(ci, i);
-		vector<int> aux2 = left_shift(di, i);
+			right = xor_operation(right, key_choice2);
 
-		vector<int> key_choice2 = permutation_choice2(aux1, aux2);
+			right = s_boxes(right);
+			
+			right = permutation(right);
 
-		right = xor_operation(right, key_choice2);
-
-		right = s_boxes(right);
-		
-		right = permutation(right);
-
-		right = xor_operation(right, left);
-
-		for (int j = 0; j < 32; ++j)
-		{
-			chipher_bits += (temp_right[j] + '0');
+			right = xor_operation(right, left);
+			left = temp_right;
+			temp_right = right;
 		}
 
+
+		// 32 bits swap
+		// a direita vem antes da esquerda
+		vector<int> result(64);
 		for (int j = 0; j < 32; ++j)
 		{
-			chipher_bits += (right[j] + '0');
+			result[j] = right[j];
+			result[j+32] = left[j];
+		}
+
+		result = inverse_initial_permutation(result);
+
+		for (int j = 0; j < 64; ++j)
+		{
+			chipher_bits += (result[j] + '0');
 		}
 	}
 
 	string chipher_text = "";
 
 	size = chipher_bits.size();
-	for (int i = 0; i < size; i+=8)
+	stringstream ss;
+	for (int i = 0; i < size; i+=4)
 	{
-		string temp = chipher_bits.substr(i, 8);
-		chipher_text += (char)strtol(temp.c_str(), NULL, 2);
+		string temp = chipher_bits.substr(i, 4);
+
+		ss << hex << strtol(temp.c_str(), NULL, 2);
 	}
+	ss >> chipher_text;
 	return chipher_text;
 }
 
+string decipher(string chipher_text, string key) {
+	vector<vector<int>> bits = convert_text(chipher_text);
+
+	vector<int> bits_key = convert_key(key);
+
+	string dechipher_bits;
+
+	int size = bits.size();
+
+	bits_key = permutation_choice1(bits_key);
+
+
+	vector<int> ci(28), di(28);
+
+	for(int j = 0; j < 28; j++) {
+		ci[j] = bits_key[j];
+		di[j] = bits_key[j+28];
+	}
+	ci = decipher_initial_shift(ci);
+	di = decipher_initial_shift(di);
+
+	for (int i = 0; i < size; ++i) {
+		bits[i] = initial_permutation(bits[i]);		
+		vector<int> left(32), right(32), temp_right(32);
+		int size2 = left.size();
+
+		for(int j = 0; j < size2; j++) {
+			left[j] = bits[i][j];
+			right[j] = bits[i][size2+j];
+			temp_right[j] = bits[i][size2+j];
+		}
+
+		for(int k = 0; k < 16; k++) {
+			right = expansion_permutation(right);
+
+			ci = right_shift(ci, k);
+			di = right_shift(di, k);
+
+			vector<int> key_choice2 = permutation_choice2(ci, di);
+
+			right = xor_operation(right, key_choice2);
+
+			right = s_boxes(right);
+			
+			right = permutation(right);
+
+			right = xor_operation(right, left);
+			left = temp_right;
+			temp_right = right;
+		}
+
+
+		// 32 bits swap
+		// a direita vem antes da esquerda
+		vector<int> result(64);
+		for (int j = 0; j < 32; ++j)
+		{
+			result[j] = right[j];
+			result[j+32] = left[j];
+		}
+
+		result = inverse_initial_permutation(result);
+
+		for (int j = 0; j < 64; ++j)
+		{
+			dechipher_bits += (result[j] + '0');
+		}
+	}
+
+	string dechipher_text = "";
+
+	size = dechipher_bits.size();
+	stringstream ss;
+	for (int i = 0; i < size; i+=4)
+	{
+		string temp = dechipher_bits.substr(i, 4);
+
+		ss << hex << strtol(temp.c_str(), NULL, 2);
+	}
+	ss >> dechipher_text;
+	return dechipher_text;
+}
+
 int main() {
-	string plaintext = "02468aceeca86420", key = "0f1571c947d9e859";
+	string plaintext = "02468aceeca86420", key = "0f1571c947d9e859", chipher_text="da02ce3a89ecac3b";
 
 	cout << chipher(plaintext, key) << endl;
+	cout << decipher(chipher_text, key) << endl;
 
 	return 0;
-
 }
