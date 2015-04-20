@@ -28,3 +28,6 @@
 *.out
 *.app
 prog
+
+# Binaries dir
+bin/

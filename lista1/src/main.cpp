@@ -1,5 +1,6 @@
 #include <iostream>
 #include "des.h"
+#include "extended_euclidean.h"
 
 using namespace std;
 
@@ -9,5 +10,8 @@ int main() {
     cout << des.cipher(plaintext, key) << endl;
     cout << des.decipher(chipher_text, key) << endl;
 
+    ExtendedEuclidean ee;
+
+    cout << endl << ee.multiplicative_inverse(5, 38) << endl;
     return 0;
 }

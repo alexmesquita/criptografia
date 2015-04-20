@@ -1,4 +1,4 @@
-NAME = des.a
+NAME = lista1.a
 
 SRC_DIR = src
 INC_DIR = include
@@ -15,7 +15,7 @@ INCLUDES = -Iinclude
 
 TARGET = $(LIB_DIR)/$(NAME)
 
-GAME = $(BIN_DIR)/des
+GAME = $(BIN_DIR)/lista1
 GAME_MAIN = $(SRC_DIR)/*.cpp
 
 SRC = ${wildcard $(SRC_DIR)/*.cpp}
@@ -40,6 +40,6 @@ $(GAME): $(GAME_MAIN) $(TARGET)
 clean:
 	@find . -name *.o -exec rm {} \;
 	@find . -name *.d -exec rm {} \;
-	@rm -rf *~ *.o bin out.txt obj lib/des.a
+	@rm -rf *~ *.o bin out.txt obj lib/lista1.a
 
 -include $(OBJ:.o=.d)
