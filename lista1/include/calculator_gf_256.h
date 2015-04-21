@@ -2,6 +2,7 @@
 #define CALCULATOR_GF_256_H
 
 #include <vector>
+#include <bitset>
 
 using namespace std;
 
@@ -15,6 +16,7 @@ public:
 	string	division(string fx, string gx);
 	
 private:
+	int degree(bitset<8> mx);
 };
 
 #endif
