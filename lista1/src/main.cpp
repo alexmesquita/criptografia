@@ -1,4 +1,5 @@
 #include <iostream>
+#include "calculator_gf_256.h"
 #include "des.h"
 #include "extended_euclidean.h"
 
@@ -13,5 +14,11 @@ int main() {
     ExtendedEuclidean ee;
 
     cout << endl << ee.multiplicative_inverse(5, 38) << endl;
+
+    CalculatorGF256 calc;
+
+    cout << endl << calc.sum("10101", "0001110") << endl; 
+    cout << calc.subtraction("10101", "0001110") << endl; 
+    cout << calc.multiplication("01010111", "10000011") << endl; 
     return 0;
 }
